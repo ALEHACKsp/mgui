@@ -2,9 +2,35 @@
 
 namespace mgui
 {
+	DrawList::DrawList()
+	{
+		dBuffer.reserve(1000);
+		vBuffer.reserve(5000);
+	}
+
+	void DrawList::preFrame()
+	{
+		dBuffer.clear();
+		vBuffer.clear();
+	}
+
+	DrawData DrawList::getDrawData()
+	{
+		DrawData data = { 0 };
+		data.descriptorList = dBuffer.data();
+		data.descriptorCount = static_cast<uint32_t>(dBuffer.size());
+		data.vertexList = vBuffer.data();
+		data.vertexCount = static_cast<uint32_t>(vBuffer.size());
+		return data;
+	}
+
 	Gui::Gui()
+		:
+		drawList(new DrawList())
 	{
 		// TODO: Gui constructor
+
+		// Apply default style
 	}
 
 	void Gui::begin(std::wstring title, Vector2 size, Vector2 startPosition, uint32_t flags)
@@ -24,9 +50,8 @@ namespace mgui
 		if (!window)
 		{
 			// Window hasn't been created yet so let's do that.
-			window = new Window();
+			window = new Window(title);
 
-			window->title = title;
 			window->size = size;
 			window->pos = startPosition;
 
@@ -66,6 +91,11 @@ namespace mgui
 		return false;
 	}
 
+	DrawData Gui::getDrawData()
+	{
+		return drawList->getDrawData();
+	}
+
 	Window* Gui::GetWindowByTitle(std::wstring title)
 	{
 		for (auto& w : windows)
@@ -77,4 +107,5 @@ namespace mgui
 		}
 		return nullptr;
 	}
+
 }

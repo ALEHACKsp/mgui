@@ -8,7 +8,30 @@
 
 namespace mgui
 {
-	class DrawList;
+	class DrawList
+	{
+	public:
+
+		DrawList();
+
+	public:
+
+		void preFrame();
+
+	public:
+
+		// TODO: Draw commands
+
+
+	public:
+
+		DrawData getDrawData();
+
+	private:
+
+		std::vector<Descriptor> dBuffer;
+		std::vector<Vertex> vBuffer;
+	};
 
 	class Gui
 	{
@@ -29,6 +52,10 @@ namespace mgui
 		// Required args: text, ?
 		bool button();
 
+
+	public:
+
+		DrawData getDrawData();
 
 	private:
 
