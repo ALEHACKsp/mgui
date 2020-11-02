@@ -116,7 +116,7 @@ namespace mgui
 
 	bool Font::setupFont(std::wstring fontName, uint32_t pt)
 	{
-		HDC hdc = CreateCompatibleDC(nullptr);
+		auto hdc = CreateCompatibleDC(nullptr);
 		SetMapMode(hdc, MM_TEXT);
 
 		auto px = -MulDiv(pt, GetDeviceCaps(hdc, LOGPIXELSY), 72);
@@ -160,7 +160,7 @@ namespace mgui
 
 	CharInfo* Font::addChar(std::wstring fontName, wchar_t c, uint32_t pt)
 	{
-		HDC hdc = CreateCompatibleDC(nullptr);
+		auto hdc = CreateCompatibleDC(nullptr);
 		SetMapMode(hdc, MM_TEXT);
 
 		auto px = -MulDiv(pt, GetDeviceCaps(hdc, LOGPIXELSY), 72);
@@ -189,7 +189,7 @@ namespace mgui
 
 	CharInfo* Font::addChar(HDC hdc, wchar_t c, int px)
 	{
-		CharInfo* ci = new CharInfo();
+		auto ci = new CharInfo();
 		
 		SIZE s = { 0 };
 
@@ -213,7 +213,7 @@ namespace mgui
 		ci->u1 = (node->x0 + ci->w) / (float)TEX_SIZE;
 		ci->v0 = node->y0 / (float)TEX_SIZE;
 		ci->v1 = (node->y0 + ci->h) / (float)TEX_SIZE;
-		ci->spacing = ceil(s.cy * 0.05f);
+		ci->spacing = ceil(s.cy * 0.01f);
 
 		BITMAPINFO bmi;
 		bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);

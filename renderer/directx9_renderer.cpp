@@ -9,9 +9,11 @@ namespace mgui
 		device(device),
 		vBuffer(nullptr),
 		fontMap(nullptr),
+		oldState(nullptr),
 		vertexBufferSize(0ul)
 	{
-		// TODO: Render state
+		
+
 		device->AddRef();
 	}
 
@@ -31,6 +33,63 @@ namespace mgui
 		}
 	}
 
+	void Renderer::setRenderState()
+	{
+		if (!oldState)
+		{
+			HRESULT hr = device->CreateStateBlock(D3DSBT_ALL, &oldState);
+			if (!SUCCEEDED(hr))
+			{
+				wprintf_s(L"[-] DX9: Failed to create state block\n");
+				return;
+			}
+
+		}
+		oldState->Capture();
+
+		device->SetFVF(CUSTOMFVF);
+		device->SetStreamSource(0, vBuffer, 0, sizeof(DX9Vertex));
+
+		device->SetRenderState(D3DRS_ZENABLE, D3DZB_FALSE);
+
+		device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
+		device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+		device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+		device->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE);
+		device->SetRenderState(D3DRS_ALPHAREF, 0x08);
+		device->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+
+		device->SetRenderState(D3DRS_LIGHTING, FALSE);
+
+		device->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, FALSE);
+
+		device->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);
+		device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
+		device->SetRenderState(D3DRS_STENCILENABLE, FALSE);
+		device->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
+		device->SetRenderState(D3DRS_CLIPPING, TRUE);
+		device->SetRenderState(D3DRS_CLIPPLANEENABLE, FALSE);
+		device->SetRenderState(D3DRS_VERTEXBLEND, D3DVBF_DISABLE);
+		device->SetRenderState(D3DRS_INDEXEDVERTEXBLENDENABLE, FALSE);
+		device->SetRenderState(D3DRS_FOGENABLE, FALSE);
+		device->SetRenderState(D3DRS_COLORWRITEENABLE,
+								D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN |
+								D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA);
+
+		device->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+		device->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+		device->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+		device->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+		device->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+		device->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
+		device->SetTextureStageState(0, D3DTSS_TEXCOORDINDEX, 0);
+		device->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_DISABLE);
+
+		device->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_POINT);
+		device->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_POINT);
+		device->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_NONE);
+	}
+
 	void Renderer::render(DrawData* data)
 	{
 		HRESULT hr;
@@ -42,7 +101,7 @@ namespace mgui
 				vBuffer->Release();
 			}
 
-			hr = device->CreateVertexBuffer(sizeof(DX9Vertex) * (data->vertexCount + 2000ull), D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, CUSTOMFVF, D3DPOOL_DEFAULT, &vBuffer, nullptr);
+			hr = device->CreateVertexBuffer(sizeof(DX9Vertex) * (data->vertexCount + 5000ull), D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC, CUSTOMFVF, D3DPOOL_DEFAULT, &vBuffer, nullptr);
 
 			if (!SUCCEEDED(hr))
 			{
@@ -83,9 +142,7 @@ namespace mgui
 			return;
 		}	
 
-
-		device->SetFVF(CUSTOMFVF);
-		device->SetStreamSource(0, vBuffer, 0, sizeof(DX9Vertex));
+		setRenderState();
 
 		uint32_t vertexIndex = 0;
 		for (auto i = 0ul; i < data->descriptorCount; ++i)
@@ -94,13 +151,21 @@ namespace mgui
 
 			device->SetTexture(0, (LPDIRECT3DTEXTURE9)descriptor.texture);
 
-			// TODO: Need to sort out clipping, should be stored in descriptor so a call to a draw command must have the clipping rect
-			// device->SetScissorRect(nullptr);
-			hr = device->DrawPrimitive(D3DPT_TRIANGLESTRIP, vertexIndex, descriptor.primCount);
+			RECT r =
+			{
+				static_cast<LONG>(descriptor.clippingRect.left),
+				static_cast<LONG>(descriptor.clippingRect.top),
+				static_cast<LONG>(descriptor.clippingRect.right),
+				static_cast<LONG>(descriptor.clippingRect.bottom)
+			};
+			device->SetScissorRect(&r);	
+
+			hr = device->DrawPrimitive(D3DPT_TRIANGLESTRIP, vertexIndex, descriptor.primitiveCount);
 
 			vertexIndex += descriptor.vertexCount;
 		}
 		
+		oldState->Apply();
 	}
 
 	void Renderer::release()

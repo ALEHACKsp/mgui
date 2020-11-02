@@ -3,13 +3,34 @@
 #include <string>
 #include <memory>
 #include <vector>
-#include <unordered_map>
+#include <stack>
 
 #include "structs.h"
 #include "font.h"
 
 namespace mgui
 {
+	enum styleColors : uint32_t
+	{
+		window_bg,
+		window_title_bg,
+		window_title_fg,
+		button_bg_default,
+		button_bg_hovered,
+		button_bg_held,
+		button_fg_default,
+		button_fg_hovered,
+		button_fg_held
+	};
+
+	class Style
+	{
+	public:
+
+		Color colors[64];
+
+	};
+
 	class DrawList
 	{
 		friend class Gui;
@@ -27,17 +48,16 @@ namespace mgui
 
 		// TODO: Draw commands
 
-		void filledRect(Vector2 position, Vector2 size, Color color);
+		void filledRect(Vector2 position, Vector2 size, Color color, Vector4 clippingRect);
 
-		void text(std::wstring text, Vector2 position, Color color); // TODO: font flags (Centering, shadow etc)
+		void text(std::wstring text, Vector2 position, Color color, Vector4 clippingRect); // TODO: font flags (Centering, shadow etc)
 
-	public:
-
-		DrawData getDrawData();
+	private:
 
 		std::unique_ptr<Font> font;
 		void* fontMap;
-	private:
+
+		std::stack<std::pair<std::wstring, uint32_t>> fontStack;
 
 		std::vector<Descriptor> dBuffer;
 		std::vector<Vertex> vBuffer;
@@ -51,6 +71,8 @@ namespace mgui
 
 	public:
 
+		void setStyleDark();
+
 		void beginFrame();
 
 		void endFrame();
@@ -59,17 +81,16 @@ namespace mgui
 
 		void endWindow(); 
 
+
 	public:
 
 		// TODO: Widgets
 
 		// Required args: text, ?
-		bool button();
+		bool button(std::wstring label);
 
 
 	public:
-
-		DrawData getDrawData();
 
 		const uint32_t* getFontData();
 
@@ -77,11 +98,21 @@ namespace mgui
 
 		void addFont(std::wstring fontName, uint32_t pt);
 
+		void pushFont(std::wstring fontName, uint32_t pt);
+
+		void popFont();
+
+	public:
+
+		DrawData getDrawData();
+
 	private:
 
 		// TODO: any helper functions
 
 		Window* getWindowByTitle(std::wstring title);
+
+
 
 	private:
 
@@ -90,10 +121,11 @@ namespace mgui
 		std::vector<std::unique_ptr<Window>> windows;
 
 
+		std::vector<Vector4> boundsStack;
 
 		// TODO: gui state: mouse pos, buttons down, etc etc
 
-		// TODO: Need a style class or struct to manage styles
+		std::unique_ptr<Style> style;
 	};
 
 }

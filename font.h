@@ -55,6 +55,7 @@ namespace mgui
 		const uint32_t* getFontMap();
 
 		bool updated;
+
 	private:
 
 		CharInfo* addChar(std::wstring fontName, wchar_t c, uint32_t pt);
@@ -62,12 +63,12 @@ namespace mgui
 		CharInfo* addChar(HDC hdc, wchar_t c, int px);
 
 	private:
+
 		std::unordered_map<std::tuple<std::wstring, wchar_t, uint32_t>, std::shared_ptr<CharInfo>, CharInfoHasher> charMap;
 
 		std::shared_ptr<Node> root;
 
 		std::shared_ptr<uint32_t[]> bitmap;
-
 
 	};
 

@@ -37,6 +37,59 @@ namespace mgui
 
 	} Vector2;
 
+	typedef struct _Vector4
+	{
+		float left, top, right, bottom;
+
+		_Vector4() : top(0), left(0), bottom(0), right(0) {}
+
+		_Vector4(float left, float top, float right, float bottom) : left(left), top(top), right(right), bottom(bottom) {}
+
+		_Vector4& operator+= (const _Vector4& other)
+		{
+			left += other.left;
+			top += other.top;
+			right += other.right;
+			bottom += other.bottom;
+			return *this;
+		}
+
+		_Vector4& operator-= (const _Vector4& other)
+		{
+			left -= other.left;
+			top -= other.top;
+			right -= other.right;
+			bottom -= other.bottom;
+			return *this;
+		}
+		
+		_Vector4 operator+ (const _Vector4& other)
+		{
+			return _Vector4(left + other.left, top + other.top, right + other.right, bottom + other.bottom);
+		}
+
+		_Vector4 operator- (const _Vector4& other)
+		{
+			return _Vector4(left - other.left, top - other.top, right - other.right, bottom - other.bottom);
+		}
+
+		bool operator() ()
+		{
+			return left && top && right && bottom;
+		}
+
+		Vector2 topLeft()
+		{
+			return Vector2(left, top);
+		}
+
+		Vector2 bottomRight()
+		{
+			return Vector2(right, bottom);
+		}
+
+	} Vector4;
+
 	typedef struct _Color
 	{
 		int r, g, b, a;
@@ -57,7 +110,8 @@ namespace mgui
 		void* texture;
 		uint32_t vertexCount;
 		//uint32_t startVertex; (Don't need since can just be done on renderer?)
-		uint32_t primCount;
+		uint32_t primitiveCount;
+		Vector4 clippingRect;
 	} Descriptor;
 
 	typedef struct _Vertex

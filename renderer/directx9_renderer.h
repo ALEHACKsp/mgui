@@ -32,6 +32,8 @@ namespace mgui
 
 	public:
 
+		void setRenderState();
+
 		void render(DrawData* data);
 
 		void release();
@@ -43,6 +45,7 @@ namespace mgui
 		LPDIRECT3DDEVICE9 device;
 		LPDIRECT3DVERTEXBUFFER9 vBuffer;
 		LPDIRECT3DTEXTURE9 fontMap;
+		LPDIRECT3DSTATEBLOCK9 oldState;
 		size_t vertexBufferSize;
 	};
 
