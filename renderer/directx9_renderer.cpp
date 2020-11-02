@@ -1,5 +1,6 @@
 #include "directx9_renderer.h"
 
+#define TEX_SIZE 4096
 
 namespace mgui
 {
@@ -32,7 +33,6 @@ namespace mgui
 
 	void Renderer::render(DrawData* data)
 	{
-		
 		HRESULT hr;
 
 		if (vertexBufferSize < data->vertexCount)
@@ -46,7 +46,7 @@ namespace mgui
 
 			if (!SUCCEEDED(hr))
 			{
-				printf_s("[-] DX9: Failed to create vertex buffer\n");
+				wprintf_s(L"[-] DX9: Failed to create vertex buffer\n");
 				return;
 			}
 			vertexBufferSize = data->vertexCount + 2000ull;
@@ -58,7 +58,7 @@ namespace mgui
 
 		if (!SUCCEEDED(hr))
 		{
-			printf_s("[-] DX9: Failed to lock vertex buffer\n");
+			wprintf_s(L"[-] DX9: Failed to lock vertex buffer\n");
 			return;
 		}
 
@@ -79,7 +79,7 @@ namespace mgui
 
 		if (!SUCCEEDED(hr))
 		{
-			printf_s("[-] DX9: Failed to unlock vertex buffer\n");
+			wprintf_s(L"[-] DX9: Failed to unlock vertex buffer\n");
 			return;
 		}	
 
@@ -94,7 +94,7 @@ namespace mgui
 
 			device->SetTexture(0, (LPDIRECT3DTEXTURE9)descriptor.texture);
 
-			// TODO: Need to sort out clipping
+			// TODO: Need to sort out clipping, should be stored in descriptor so a call to a draw command must have the clipping rect
 			// device->SetScissorRect(nullptr);
 			hr = device->DrawPrimitive(D3DPT_TRIANGLESTRIP, vertexIndex, descriptor.primCount);
 
@@ -117,9 +117,54 @@ namespace mgui
 		}
 	}
 
-	bool Renderer::updateFontMap()
+	void Renderer::updateFontMap(Gui* gui)
 	{
-		return false;
+		auto bitmap = gui->getFontData();
+		if (!bitmap)
+		{
+			return;
+		}
+
+		HRESULT hr;
+
+		if (!fontMap)
+		{
+			hr = device->CreateTexture(TEX_SIZE, TEX_SIZE, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &fontMap, NULL);
+
+			if (!SUCCEEDED(hr))
+			{
+				wprintf_s(L"[-] DX9: Failed to create texture for font map\n");
+				return;
+			}
+		}
+
+		RECT rect = { 0 };
+		rect.left = rect.top = 0;
+		rect.right = rect.bottom = TEX_SIZE - 1;
+
+		D3DLOCKED_RECT lRect;
+
+		hr = fontMap->LockRect(0, &lRect, &rect, NULL);
+
+		if (!SUCCEEDED(hr))
+		{
+			wprintf_s(L"[-] DX9: Failed to lock texture rect\n");
+			return;
+		}
+		
+		size_t size = sizeof(uint32_t) * TEX_SIZE * TEX_SIZE;
+
+		memcpy_s(lRect.pBits, size, bitmap, size);
+		
+		hr = fontMap->UnlockRect(0);
+
+		if (!SUCCEEDED(hr))
+		{
+			wprintf_s(L"[-] DX9: Failed to unlock texture rect\n");
+			return;
+		}
+
+		gui->setFontTexture(fontMap);
 	}
 
 }

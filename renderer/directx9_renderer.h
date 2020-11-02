@@ -2,16 +2,16 @@
 
 #include <d3d9.h>
 #include <unordered_set>
-#include <array>
 #include <memory>
+#include <vector>
 
+#include "..\gui.h"
 #include "..\structs.h"
 
 #define CUSTOMFVF (D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1)
 
 namespace mgui
 {
-
 
 	class Renderer
 	{
@@ -36,7 +36,7 @@ namespace mgui
 
 		void release();
 
-		bool updateFontMap(); // TODO: Pass in buffer that contains font map
+		void updateFontMap(Gui* gui);
 
 	private:
 
@@ -45,8 +45,5 @@ namespace mgui
 		LPDIRECT3DTEXTURE9 fontMap;
 		size_t vertexBufferSize;
 	};
-
-
-
 
 }

@@ -141,10 +141,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="font.cpp" />
     <ClCompile Include="gui.cpp" />
     <ClCompile Include="renderer\directx9_renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="font.h" />
     <ClInclude Include="gui.h" />
     <ClInclude Include="renderer\directx9_renderer.h" />
     <ClInclude Include="structs.h" />

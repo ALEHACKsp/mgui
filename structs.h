@@ -2,6 +2,7 @@
 
 namespace mgui
 {
+
 	typedef struct _Vector2
 	{
 		float x, y;
@@ -10,20 +11,29 @@ namespace mgui
 
 		_Vector2(float x, float y) : x(x), y(y) {}
 
-		_Vector2& operator+ (const _Vector2& other)
+		_Vector2& operator+= (const _Vector2& other)
 		{
 			x += other.x;
 			y += other.y;
 			return *this;
 		}
 
-		_Vector2& operator- (const _Vector2& other)
+		_Vector2& operator-= (const _Vector2& other)
 		{
 			x -= other.x;
 			y -= other.y;
 			return *this;
 		}
 
+		_Vector2 operator+ (const _Vector2 other)
+		{
+			return _Vector2(x + other.x, y + other.y);
+		}
+
+		_Vector2 operator- (const _Vector2 other)
+		{
+			return _Vector2(x - other.x, y - other.y);
+		}
 
 	} Vector2;
 
@@ -32,8 +42,6 @@ namespace mgui
 		int r, g, b, a;
 
 		_Color() : r(0), g(0), b(0), a(0) {};
-
-		_Color(float r, float g, float b, float a = 1.0) : r((int)r * 255), g((int)g * 255), b((int)b * 255), a((int)a * 255) {}
 
 		_Color(int r, int g, int b, int a = 255) : r(r), g(g), b(b), a(a) {}
 
@@ -67,6 +75,13 @@ namespace mgui
 		uint32_t vertexCount;
 	} DrawData;
 
+	typedef struct _CharInfo
+	{
+		float u0, v0;
+		float u1, v1;
+		float w, h;
+		float spacing;
+	} CharInfo;
 	// TODO: Define any other global structs here
 
 	typedef struct _Window
